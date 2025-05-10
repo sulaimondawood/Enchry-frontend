@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { ROUTES } from "@/routes";
 
 type SidebarLinkProps = {
   to: string;
@@ -63,12 +64,12 @@ export function DashboardSidebar() {
           <div className="space-y-1">
             <SidebarLink to="/dashboard" icon={Home} label="Dashboard" />
             <SidebarLink
-              to="/dashboard/devices"
+              to={ROUTES.dashboardDevice}
               icon={ThermometerSnowflake}
               label="Devices"
             />
             <SidebarLink
-              to="/dashboard/analytics"
+              to={ROUTES.dashboardAnalytics}
               icon={Activity}
               label="Analytics"
             />
@@ -81,17 +82,17 @@ export function DashboardSidebar() {
           </div>
           <div className="space-y-1">
             <SidebarLink
-              to="/dashboard/encryption"
+              to={ROUTES.dashboardEncryption}
               icon={Shield}
               label="ChaCha-20 Settings"
             />
             <SidebarLink
-              to="/dashboard/logs"
+              to={ROUTES.dashboardSecurityLogs}
               icon={Layers}
               label="Security Logs"
             />
             <SidebarLink
-              to="/dashboard/settings"
+              to={ROUTES.dashboardSettings}
               icon={Settings}
               label="Settings"
             />
@@ -99,7 +100,7 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-4 border-t border-sidebar-border">
-          <Link href="/login">
+          <Link href={""}>
             <Button
               variant="ghost"
               className="w-full justify-start text-sidebar-foreground"
