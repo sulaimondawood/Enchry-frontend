@@ -12,11 +12,8 @@ export function Navbar() {
   return (
     <nav className="py-4 border-b border-border bg-background/95 backdrop-blur-sm fixed top-0 w-full z-50">
       <div className="container mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-brand-blue to-brand-teal flex items-center justify-center">
-            <div className="h-4 w-4 border-2 border-white rounded-full"></div>
-          </div>
-          <span className="font-bold text-xl">SecureTemp</span>
+        <Link href="/" className="w-[180px]">
+          <img src={"/enchry-logo.png"} />
         </Link>
 
         <div className="hidden md:flex items-center gap-6">

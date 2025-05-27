@@ -13,6 +13,7 @@ export const ROUTES = {
   dashboardEncryption: "/dashboard/encryption",
   dashboardSecurityLogs: "/dashboard/security-logs",
   dashboardSettings: "/dashboard/settings",
+  dashboardSimulator: "/dashboard/simulator",
 };
 
 export const mainNav = [

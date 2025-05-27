@@ -6,9 +6,9 @@ import {
   LogOut,
   ThermometerSnowflake,
   Shield,
-  Menu,
   Layers,
   Activity,
+  Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,11 @@ export function DashboardSidebar() {
               to={ROUTES.dashboardDevice}
               icon={ThermometerSnowflake}
               label="Devices"
+            />
+            <SidebarLink
+              to={ROUTES.dashboardSimulator}
+              icon={Play}
+              label="Simulator"
             />
             <SidebarLink
               to={ROUTES.dashboardAnalytics}
