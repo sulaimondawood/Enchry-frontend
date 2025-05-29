@@ -12,20 +12,26 @@ interface EncryptSensorDataResult {
 export async function encryptSensorData(
   temperature: number,
   humidity: number,
-  serverPublicKey: Uint8Array, // Provided by the backend
-  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }, // Reused device key pair
-  info: string = "device-123-session1", // Configurable context
-  additionalData?: string // Optional additional authenticated data
+  // serverPublicKey: Uint8Array, // Provided by the backend
+  // deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }, // Reused device key pair
+  info: string = "device-123-session1" // Configurable context
 ): Promise<EncryptSensorDataResult> {
   try {
     // Ensure sodium is ready
     await sodium.ready;
 
+    // 1. Device key pair generation
+    const deviceKeyPair = sodium.crypto_kx_keypair();
+
+    // Simulate server public key (replace with real one from backend)
+    const serverKeyPair = sodium.crypto_kx_keypair();
+
     // 1. Derive shared secret using key exchange
     const sessionKeys = sodium.crypto_kx_client_session_keys(
       deviceKeyPair.publicKey,
       deviceKeyPair.privateKey,
-      serverPublicKey
+      serverKeyPair.publicKey
+      // serverPublicKey
     );
 
     // Use the receive key for client-to-server encryption
@@ -47,12 +53,9 @@ export async function encryptSensorData(
     const message = JSON.stringify({ temperature, humidity });
     const messageBytes = sodium.from_string(message);
 
-    // Handle additional authenticated data
-    const adBytes = additionalData ? sodium.from_string(additionalData) : null;
-
     const ciphertext = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(
       messageBytes,
-      adBytes,
+      null,
       null, // nsec (not used)
       nonce,
       derivedKey
@@ -64,9 +67,6 @@ export async function encryptSensorData(
       devicePublicKey: sodium.to_base64(deviceKeyPair.publicKey),
       salt: sodium.to_base64(salt),
       info, // Return as plain string
-      ...(additionalData && {
-        additionalData: sodium.to_base64(additionalData),
-      }), // Include only if provided
     };
   } catch (error: any) {
     throw new Error(`Encryption failed: ${error?.message}`);
