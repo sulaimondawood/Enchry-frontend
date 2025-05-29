@@ -25,7 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { SimulatedDevice } from "../page";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 interface DeviceSimulatorProps {
   device: SimulatedDevice;
@@ -52,6 +52,7 @@ export function DeviceSimulator({
     onDeviceUpdate(updatedDevice);
   };
 
+  //Get data from open-metro
   const {
     data: climateDataFetch,
     refetch,
@@ -72,6 +73,10 @@ export function DeviceSimulator({
     enabled: false,
     retry: false,
   });
+
+  // const {} = useMutation({
+  //   mutationFn:async()
+  // })
 
   //Manually Fetch
   const handleClimateDataFetch = () => {
@@ -155,24 +160,6 @@ export function DeviceSimulator({
             {device.status === "active" ? "Deactivate" : "Activate"}
           </Button>
         </div>
-
-        {/* Scanning Progress */}
-        {/* {isScanning && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Scanning sensors...</span>
-              <span>{Math.round(scanProgress)}%</span>
-            </div>
-            <Progress value={scanProgress} />
-          </div>
-        )} */}
-
-        {/* Error Display */}
-        {/* {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
-        )} */}
 
         {/* Sensor Readings */}
         {device.lastReading && (
