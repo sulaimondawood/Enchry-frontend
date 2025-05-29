@@ -56,6 +56,7 @@ const DeviceSimulatorPage = () => {
   const [selectedDevice, setSelectedDevice] = useState<SimulatedDevice | null>(
     null
   );
+  const [isOpenMetroActive, setIsOpenMetroActive] = useState(false);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const { toast } = useToast();
 
