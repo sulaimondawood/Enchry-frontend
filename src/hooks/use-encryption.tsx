@@ -17,28 +17,26 @@ export async function encryptSensorData(
   info: string = "device-123-session1" // Configurable context
 ): Promise<EncryptSensorDataResult> {
   try {
-    // Ensure sodium is ready
     await sodium.ready;
 
-    // 1. Device key pair generation
+    // Device key pair generation
     const deviceKeyPair = sodium.crypto_kx_keypair();
 
     // Simulate server public key (replace with real one from backend)
     const serverKeyPair = sodium.crypto_kx_keypair();
 
-    // 1. Derive shared secret using key exchange
+    // Derive shared secret using key exchange (Elliptic Curve Diffie Hellman)
     const sessionKeys = sodium.crypto_kx_client_session_keys(
       deviceKeyPair.publicKey,
       deviceKeyPair.privateKey,
       serverKeyPair.publicKey
-      // serverPublicKey
     );
 
-    // Use the receive key for client-to-server encryption
+    // Uses the receive key for client-to-server encryption
     const sharedKey = sessionKeys.sharedRx;
 
-    // 2. Derive encryption key using HKDF
-    const salt = sodium.randombytes_buf(16); // 16-byte salt
+    // Derive encryption key using HKDF
+    const salt = sodium.randombytes_buf(16);
     const derivedKey = sodium.crypto_kdf_derive_from_key(
       32, // 256-bit key
       1, // Key ID
@@ -46,7 +44,7 @@ export async function encryptSensorData(
       sharedKey
     );
 
-    // 3. Encrypt data using ChaCha20-Poly1305 (IETF variant)
+    // Encrypt data using ChaCha20-Poly1305 (IETF variant)
     const nonce = sodium.randombytes_buf(
       sodium.crypto_aead_chacha20poly1305_ietf_NPUBBYTES
     ); // 12-byte nonce
