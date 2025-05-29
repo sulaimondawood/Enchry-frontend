@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,6 +24,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SimulatedDevice } from "../page";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 interface DeviceSimulatorProps {
   device: SimulatedDevice;
@@ -37,91 +41,8 @@ export function DeviceSimulator({
   device,
   onDeviceUpdate,
 }: DeviceSimulatorProps) {
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const fetchWeatherData = async (): Promise<WeatherData> => {
-    try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${device.latitude}&longitude=${device.longitude}&current=temperature_2m,relative_humidity_2m&timezone=auto`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch weather data");
-      }
-
-      const data = await response.json();
-
-      return {
-        temperature: parseFloat(data.current.temperature_2m.toFixed(1)),
-        humidity: parseFloat(data.current.relative_humidity_2m.toFixed(1)),
-      };
-    } catch (error) {
-      console.error("Weather API Error:", error);
-      throw new Error("Unable to connect to weather service");
-    }
-  };
-
-  const simulateScanning = async () => {
-    setIsScanning(true);
-    setError(null);
-    setScanProgress(0);
-
-    try {
-      // Simulate scanning process with progress
-      const steps = 10;
-      for (let i = 0; i <= steps; i++) {
-        setScanProgress((i / steps) * 100);
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
-      // Fetch real weather data
-      const weatherData = await fetchWeatherData();
-
-      // Update device with new reading
-      const updatedDevice: SimulatedDevice = {
-        ...device,
-        status: "active",
-        lastReading: {
-          ...(device.type === "temperature" || device.type === "both"
-            ? { temperature: weatherData.temperature }
-            : {}),
-          ...(device.type === "humidity" || device.type === "both"
-            ? { humidity: weatherData.humidity }
-            : {}),
-          timestamp: new Date(),
-        },
-      };
-
-      onDeviceUpdate(updatedDevice);
-
-      toast({
-        title: "Sensor Reading Complete",
-        description: `Successfully captured data from ${device.location}`,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error occurred");
-      toast({
-        title: "Sensor Error",
-        description: "Failed to capture sensor data. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsScanning(false);
-      setScanProgress(0);
-    }
-  };
-
-  const stopScanning = () => {
-    setIsScanning(false);
-    setScanProgress(0);
-    toast({
-      title: "Scan Stopped",
-      description: "Sensor scanning has been stopped",
-    });
-  };
+  const controllerRef = useRef(new AbortController());
 
   const toggleDeviceStatus = () => {
     const updatedDevice: SimulatedDevice = {
@@ -129,6 +50,42 @@ export function DeviceSimulator({
       status: device.status === "active" ? "inactive" : "active",
     };
     onDeviceUpdate(updatedDevice);
+  };
+
+  const {
+    data: climateDataFetch,
+    refetch,
+    isFetching: isLoading,
+  } = useQuery({
+    queryKey: ["open-metro", "api"],
+    queryFn: async ({ signal }) => {
+      const res = await axios.get("https://api.open-meteo.com/v1/forecast", {
+        params: {
+          latitude: 52.52,
+          longitude: 13.41,
+          current: ["temperature_2m", "relative_humidity_2m"],
+        },
+        signal: signal || controllerRef.current.signal,
+      });
+      return res.data;
+    },
+    enabled: false,
+    retry: false,
+  });
+
+  //Manually Fetch
+  const handleClimateDataFetch = () => {
+    refetch();
+    controllerRef.current = new AbortController(); // Reset for future requests
+  };
+
+  // Function to manually abort the request
+  const handleCancel = () => {
+    controllerRef.current.abort();
+    toast({
+      title: "Scan Stopped",
+      description: "Sensor scanning has been stopped",
+    });
   };
 
   return (
@@ -170,11 +127,11 @@ export function DeviceSimulator({
         {/* Device Controls */}
         <div className="flex gap-3">
           <Button
-            onClick={simulateScanning}
-            disabled={isScanning || device.status === "inactive"}
+            onClick={handleClimateDataFetch}
+            disabled={isLoading || device.status === "inactive"}
             className="flex-1"
           >
-            {isScanning ? (
+            {isLoading ? (
               <>
                 <RotateCw className="mr-2 h-4 w-4 animate-spin" />
                 Scanning...
@@ -187,8 +144,8 @@ export function DeviceSimulator({
             )}
           </Button>
 
-          {isScanning && (
-            <Button onClick={stopScanning} variant="outline">
+          {isLoading && (
+            <Button onClick={handleCancel} variant="outline">
               <Square className="mr-2 h-4 w-4" />
               Stop
             </Button>
@@ -200,7 +157,7 @@ export function DeviceSimulator({
         </div>
 
         {/* Scanning Progress */}
-        {isScanning && (
+        {/* {isScanning && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Scanning sensors...</span>
@@ -208,14 +165,14 @@ export function DeviceSimulator({
             </div>
             <Progress value={scanProgress} />
           </div>
-        )}
+        )} */}
 
         {/* Error Display */}
-        {error && (
+        {/* {error && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
             <p className="text-sm text-destructive">{error}</p>
           </div>
-        )}
+        )} */}
 
         {/* Sensor Readings */}
         {device.lastReading && (

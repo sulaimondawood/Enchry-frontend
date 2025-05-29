@@ -15,6 +15,9 @@ import { DashboardPageHeader } from "@/components/global/dashboard-page-header";
 import { DeviceSimulator } from "./_components/DeviceSimulator";
 import { RegisteredDevicesList } from "./_components/RegisteredDevicesList";
 import { DeviceRegistrationDialog } from "./_components/DeviceRegistrationDialog";
+import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 export interface SimulatedDevice {
   id: string;
@@ -56,9 +59,10 @@ const DeviceSimulatorPage = () => {
   const [selectedDevice, setSelectedDevice] = useState<SimulatedDevice | null>(
     null
   );
-  const [isOpenMetroActive, setIsOpenMetroActive] = useState(false);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
   const { toast } = useToast();
+  const { isOnline } = useDetectInternetConnection();
 
   const handleRegisterDevice = (
     deviceData: Omit<SimulatedDevice, "id" | "status">
@@ -138,17 +142,27 @@ const DeviceSimulatorPage = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">API Status</CardTitle>
-            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            <CardTitle className="text-sm font-medium">
+              Device Connection Status
+            </CardTitle>
+            {isOnline ? (
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            ) : (
+              <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Online</div>
+            {isOnline ? (
+              <div className="text-2xl font-bold text-green-600">Online</div>
+            ) : (
+              <div className="text-2xl font-bold text-red-600">Offline</div>
+            )}
             <p className="text-xs text-muted-foreground">Open-Meteo API</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1.4fr] gap-8">
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold">Device Simulation</h3>
