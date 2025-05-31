@@ -21,6 +21,7 @@ import {
 interface RegisteredDevicesListProps {
   devices: IDevice[];
   selectedDevice: IDevice | null;
+  isDeleting: boolean;
   onDeviceSelect: (device: IDevice) => void;
   onDeviceDelete: (deviceId: string) => void;
 }
@@ -30,6 +31,7 @@ export function RegisteredDevicesList({
   selectedDevice,
   onDeviceSelect,
   onDeviceDelete,
+  isDeleting,
 }: RegisteredDevicesListProps) {
   if (devices.length === 0) {
     return (
@@ -77,6 +79,7 @@ export function RegisteredDevicesList({
                   {device.active ? "Active" : "Inactive"}
                 </Badge>
                 <Button
+                  disabled={isDeleting}
                   variant="ghost"
                   size="sm"
                   onClick={(e) => {

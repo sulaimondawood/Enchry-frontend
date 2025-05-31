@@ -20,6 +20,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { deleteDevice, getDevices } from "@/services/api/simulation";
 import Skeleton from "react-loading-skeleton";
 import { Loader } from "@/components/loader/Loader";
+import { queryClient } from "@/services/providers/tanstack-provider";
 
 const DeviceSimulatorPage = () => {
   const [selectedDevice, setSelectedDevice] = useState<IDevice | null>(null);
@@ -29,12 +30,6 @@ const DeviceSimulatorPage = () => {
   const { isOnline } = useDetectInternetConnection();
 
   const handleRegisterDevice = (deviceData: Omit<IDevice, "id" | "status">) => {
-    const newDevice: IDevice = {
-      ...deviceData,
-      id: `sim-${Date.now()}`,
-      // status: "inactive",
-    };
-
     // setDevices((prev) => [...prev, newDevice]);
     toast({
       title: "Device Registered",
@@ -50,15 +45,20 @@ const DeviceSimulatorPage = () => {
   //   );
   // };
 
-  const handleDeleteDevice = (deviceId: string) => {
-    toast({
-      title: "Device Removed",
-      description: "Device has been successfully removed from simulation.",
+  const { mutate: handleDeleteDevice, isPending: isDeletingDevice } =
+    useMutation({
+      mutationFn: async (deviceId: string) => await deleteDevice(deviceId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["devices", "all"],
+        });
+
+        toast({
+          title: "Device Removed",
+          description: "Device has been successfully removed from simulation.",
+        });
+      },
     });
-  };
-  const {} = useMutation({
-    mutationFn: async (deviceId: string) => await deleteDevice(deviceId),
-  });
 
   const {
     data: userDevices,
@@ -190,6 +190,7 @@ const DeviceSimulatorPage = () => {
               selectedDevice={selectedDevice}
               onDeviceSelect={setSelectedDevice}
               onDeviceDelete={handleDeleteDevice}
+              isDeleting={isDeletingDevice}
             />
           )}
         </div>
@@ -198,7 +199,6 @@ const DeviceSimulatorPage = () => {
       <DeviceRegistrationDialog
         open={isRegistrationOpen}
         onOpenChange={setIsRegistrationOpen}
-        onRegister={handleRegisterDevice}
       />
     </div>
   );

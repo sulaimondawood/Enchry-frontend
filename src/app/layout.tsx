@@ -4,6 +4,7 @@ import "./globals.css";
 import "react-loading-skeleton/dist/skeleton.css";
 
 import TanstackProvider from "@/services/providers/tanstack-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TanstackProvider>{children}</TanstackProvider>
+        <Toaster />
       </body>
     </html>
   );

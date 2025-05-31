@@ -12,43 +12,64 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Thermometer, Droplet } from "lucide-react";
-import { SimulatedDevice } from "../page";
+import { useMutation } from "@tanstack/react-query";
+import { addDevice } from "@/services/api/simulation";
+import { queryClient } from "@/services/providers/tanstack-provider";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 interface DeviceRegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onRegister: (device: Omit<SimulatedDevice, "id" | "status">) => void;
 }
 
 export function DeviceRegistrationDialog({
   open,
   onOpenChange,
-  onRegister,
 }: DeviceRegistrationDialogProps) {
   const [formData, setFormData] = useState({
     name: "",
-    type: "both" as "temperature" | "humidity" | "both",
+    description: "",
+    type: "" as "temperature" | "humidity" | "both" | "",
   });
+
+  const { mutate: handleCreateDevice, isPending: isAddingDevice } = useMutation(
+    {
+      mutationFn: async (payload: DevicePayload) => await addDevice(payload),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["devices", "all"],
+        });
+        toast.success("Device has been successfully added");
+        // Reset form
+        setFormData({
+          name: "",
+          type: "",
+          description: "",
+        });
+
+        onOpenChange(false);
+      },
+      onError(error: any, variables, context) {
+        if (error?.response?.data) {
+          Object.entries(error?.response.data).forEach(([field, message]) => {
+            toast.error(String(message));
+          });
+        } else {
+          toast.error(error.message || "Something went wrong");
+        }
+      },
+    }
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name) {
-      return;
-    }
-
-    onRegister({
-      name: formData.name,
-      type: formData.type,
+    handleCreateDevice({
+      deviceName: formData?.name,
+      sensorType: formData.type,
+      deviceDescription: formData?.description || "",
     });
-
-    // Reset form
-    setFormData({
-      name: "",
-      type: "both",
-    });
-
-    onOpenChange(false);
   };
 
   return (
@@ -76,14 +97,16 @@ export function DeviceRegistrationDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Device Description</Label>
-            <Input
+            <Textarea
               id="d-desc"
-              placeholder="e.g., Office Sensor A1"
-              value={formData.name}
+              placeholder="e.g., Office Sensor A1 to detect temperature level"
+              value={formData.description}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
-              required
             />
           </div>
 
@@ -151,7 +174,9 @@ export function DeviceRegistrationDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Register Device</Button>
+            <Button type="submit" disabled={isAddingDevice}>
+              {isAddingDevice ? "Adding Device..." : "Register Device"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

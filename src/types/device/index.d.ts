@@ -5,3 +5,9 @@ interface IDevice {
   id: string;
   sensorType: string;
 }
+
+interface DevicePayload {
+  deviceName: string;
+  deviceDescription?: string;
+  sensorType: string;
+}
