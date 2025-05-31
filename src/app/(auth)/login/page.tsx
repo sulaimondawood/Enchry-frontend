@@ -25,9 +25,8 @@ const Login = () => {
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: LoginPayload) => await SignIn(data),
-    onSuccess(data, variables, context) {
+    onSuccess() {
       navigate.push("/dashboard");
-      console.log(data);
     },
   });
 

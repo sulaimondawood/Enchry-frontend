@@ -28,7 +28,6 @@ const Signup = () => {
     mutationFn: async (data: RegisterPayload) => await Register(data),
     onSuccess(data, variables, context) {
       navigate.push("/login");
-      console.log(data);
     },
   });
 
