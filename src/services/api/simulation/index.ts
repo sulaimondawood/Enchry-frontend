@@ -10,3 +10,12 @@ export const getDevices = async () => {
     throw error;
   }
 };
+
+export const deleteDevice = async (deviceId: string) => {
+  try {
+    const res = await api.delete("/devices/" + deviceId);
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};

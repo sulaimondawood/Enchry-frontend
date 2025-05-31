@@ -16,14 +16,12 @@ import { DeviceSimulator } from "./_components/DeviceSimulator";
 import { RegisteredDevicesList } from "./_components/RegisteredDevicesList";
 import { DeviceRegistrationDialog } from "./_components/DeviceRegistrationDialog";
 import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
-import { useQuery } from "@tanstack/react-query";
-import { getDevices } from "@/services/api/simulation";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { deleteDevice, getDevices } from "@/services/api/simulation";
 import Skeleton from "react-loading-skeleton";
 import { Loader } from "@/components/loader/Loader";
 
 const DeviceSimulatorPage = () => {
-  const [devices, setDevices] = useState<IDevice[]>([]);
-
   const [selectedDevice, setSelectedDevice] = useState<IDevice | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
@@ -53,15 +51,14 @@ const DeviceSimulatorPage = () => {
   // };
 
   const handleDeleteDevice = (deviceId: string) => {
-    setDevices((prev) => prev.filter((device) => device.id !== deviceId));
-    if (selectedDevice?.id === deviceId) {
-      setSelectedDevice(null);
-    }
     toast({
       title: "Device Removed",
       description: "Device has been successfully removed from simulation.",
     });
   };
+  const {} = useMutation({
+    mutationFn: async (deviceId: string) => await deleteDevice(deviceId),
+  });
 
   const {
     data: userDevices,
