@@ -17,7 +17,7 @@ import { RegisteredDevicesList } from "./_components/RegisteredDevicesList";
 import { DeviceRegistrationDialog } from "./_components/DeviceRegistrationDialog";
 import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { getDevices } from "@/services/api/simulation";
 
 export interface SimulatedDevice {
   id: string;
@@ -105,6 +105,17 @@ const DeviceSimulatorPage = () => {
     0
   );
 
+  const {
+    data: userDevices,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["devices", "all"],
+    queryFn: getDevices,
+  });
+
+  console.log(userDevices);
+
   return (
     <div>
       <DashboardPageHeader
@@ -120,7 +131,7 @@ const DeviceSimulatorPage = () => {
             <Thermometer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{devices.length}</div>
+            <div className="text-2xl font-bold">{userDevices?.length}</div>
             <p className="text-xs text-muted-foreground">
               {activeDevices.length} active
             </p>
