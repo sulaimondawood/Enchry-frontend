@@ -15,22 +15,28 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/routes";
+import { useMutation } from "@tanstack/react-query";
+import { LoginPayload, SignIn } from "@/services/api/auth";
 
 const Login = () => {
   const navigate = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: LoginPayload) => await SignIn(data),
+    onSuccess(data, variables, context) {
+      navigate.push("/dashboard");
+      console.log(data);
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate.push("/dashboard");
-    }, 1000);
+    mutate({
+      email,
+      password,
+    });
   };
 
   return (

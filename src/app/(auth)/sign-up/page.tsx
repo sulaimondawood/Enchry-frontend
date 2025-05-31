@@ -27,7 +27,7 @@ const Signup = () => {
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: RegisterPayload) => await Register(data),
     onSuccess(data, variables, context) {
-      navigate.push("/dashboard");
+      navigate.push("/login");
       console.log(data);
     },
   });
