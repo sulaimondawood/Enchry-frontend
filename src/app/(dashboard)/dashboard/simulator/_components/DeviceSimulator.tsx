@@ -23,13 +23,12 @@ import {
   RotateCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { SimulatedDevice } from "../page";
 import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 interface DeviceSimulatorProps {
-  device: SimulatedDevice;
-  onDeviceUpdate: (device: SimulatedDevice) => void;
+  device: IDevice;
+  onDeviceUpdate: (device: IDevice) => void;
 }
 
 interface WeatherData {
@@ -44,13 +43,13 @@ export function DeviceSimulator({
   const { toast } = useToast();
   const controllerRef = useRef(new AbortController());
 
-  const toggleDeviceStatus = () => {
-    const updatedDevice: SimulatedDevice = {
-      ...device,
-      status: device.status === "active" ? "inactive" : "active",
-    };
-    onDeviceUpdate(updatedDevice);
-  };
+  // const toggleDeviceStatus = () => {
+  //   const updatedDevice: SimulatedDevice = {
+  //     ...device,
+  //     status: device.stat === "active" ? "inactive" : "active",
+  //   };
+  //   onDeviceUpdate(updatedDevice);
+  // };
 
   //Get data from open-metro
   const {
@@ -99,28 +98,26 @@ export function DeviceSimulator({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              {device.status === "active" ? (
+              {device?.active ? (
                 <Wifi className="h-5 w-5 text-green-500" />
               ) : (
                 <WifiOff className="h-5 w-5 text-red-500" />
               )}
-              {device.name}
+              {device.deviceName}
             </CardTitle>
             <CardDescription className="flex items-center gap-1 mt-1">
               <MapPin className="h-3 w-3" />
-              {device.location}
+              Africa, Nigeria
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Badge
-              variant={device.status === "active" ? "default" : "secondary"}
-            >
-              {device.status}
+            <Badge variant={device.active ? "default" : "secondary"}>
+              {device.active ? "Active" : "Inactive"}
             </Badge>
             <Badge variant="outline">
-              {device.type === "both"
+              {device.sensorType === "BOTH"
                 ? "T & H"
-                : device.type === "temperature"
+                : device.sensorType === "TEMP"
                 ? "Temp"
                 : "Humidity"}
             </Badge>
@@ -133,7 +130,7 @@ export function DeviceSimulator({
         <div className="flex gap-3">
           <Button
             onClick={handleClimateDataFetch}
-            disabled={isLoading || device.status === "inactive"}
+            disabled={isLoading || device?.active}
             className="flex-1"
           >
             {isLoading ? (
@@ -156,13 +153,13 @@ export function DeviceSimulator({
             </Button>
           )}
 
-          <Button onClick={toggleDeviceStatus} variant="outline">
-            {device.status === "active" ? "Deactivate" : "Activate"}
+          <Button onClick={() => ""} variant="outline">
+            {device.active ? "Deactivate" : "Activate"}
           </Button>
         </div>
 
         {/* Sensor Readings */}
-        {device.lastReading && (
+        {/* {device.lastReading && (
           <div className="space-y-4">
             <h4 className="font-medium flex items-center gap-2">
               <Clock className="h-4 w-4" />
@@ -213,7 +210,7 @@ export function DeviceSimulator({
               )}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Device Info */}
         <div className="pt-4 border-t">
@@ -227,7 +224,13 @@ export function DeviceSimulator({
             </div>
             <div>
               <span className="text-muted-foreground">Sensor Type:</span>
-              <div className="capitalize">{device.type}</div>
+              <div className="capitalize">
+                {device.sensorType === "BOTH"
+                  ? "Temperature & Humidity"
+                  : device.sensorType === "TEMP"
+                  ? "Temperature"
+                  : "Humidity"}
+              </div>
             </div>
           </div>
         </div>

@@ -11,6 +11,17 @@ export const getDevices = async () => {
   }
 };
 
+export const getDevice = async (deviceId: string) => {
+  try {
+    const res = await api.get("/devices/user/" + deviceId);
+    const data = res.data;
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const addDevice = async (payload: DevicePayload) => {
   try {
     const res = await api.post("/devices", payload);

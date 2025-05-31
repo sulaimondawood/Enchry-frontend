@@ -17,25 +17,20 @@ import { RegisteredDevicesList } from "./_components/RegisteredDevicesList";
 import { DeviceRegistrationDialog } from "./_components/DeviceRegistrationDialog";
 import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { deleteDevice, getDevices } from "@/services/api/simulation";
+import { deleteDevice, getDevice, getDevices } from "@/services/api/simulation";
 import Skeleton from "react-loading-skeleton";
 import { Loader } from "@/components/loader/Loader";
 import { queryClient } from "@/services/providers/tanstack-provider";
+import { useSearchParams } from "next/navigation";
 
 const DeviceSimulatorPage = () => {
-  const [selectedDevice, setSelectedDevice] = useState<IDevice | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   const { toast } = useToast();
   const { isOnline } = useDetectInternetConnection();
+  const searchParams = useSearchParams();
 
-  const handleRegisterDevice = (deviceData: Omit<IDevice, "id" | "status">) => {
-    // setDevices((prev) => [...prev, newDevice]);
-    toast({
-      title: "Device Registered",
-      description: `has been successfully registered.`,
-    });
-  };
+  console.log(searchParams.get("device"));
 
   // const handleDeviceUpdate = (updatedDevice: SimulatedDevice) => {
   //   setDevices((prev) =>
@@ -68,6 +63,16 @@ const DeviceSimulatorPage = () => {
   } = useQuery<IDevice[]>({
     queryKey: ["devices", "all"],
     queryFn: getDevices,
+  });
+
+  const {
+    data: device,
+    isLoading: isLoadingDevice,
+    isError: isErrorLoadingDevice,
+  } = useQuery<IDevice>({
+    queryKey: ["devices", "all", "single-device", searchParams?.get("device")],
+    queryFn: () => getDevice(searchParams?.get("device") || ""),
+    enabled: !!searchParams.get("device"),
   });
 
   const getActiveDevices = () => {
@@ -150,11 +155,10 @@ const DeviceSimulatorPage = () => {
             </Button>
           </div>
 
-          {selectedDevice ? (
-            <DeviceSimulator
-              device={selectedDevice}
-              onDeviceUpdate={() => ""}
-            />
+          {isLoadingDevice ? (
+            <Loader />
+          ) : searchParams.get("device") ? (
+            <DeviceSimulator device={device!} onDeviceUpdate={() => ""} />
           ) : (
             <Card>
               <CardHeader>
@@ -187,8 +191,6 @@ const DeviceSimulatorPage = () => {
           ) : (
             <RegisteredDevicesList
               devices={userDevices || []}
-              selectedDevice={selectedDevice}
-              onDeviceSelect={setSelectedDevice}
               onDeviceDelete={handleDeleteDevice}
               isDeleting={isDeletingDevice}
             />

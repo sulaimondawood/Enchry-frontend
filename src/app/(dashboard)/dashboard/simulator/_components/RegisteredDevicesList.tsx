@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Card,
@@ -17,22 +19,31 @@ import {
   WifiOff,
   Clock,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 interface RegisteredDevicesListProps {
   devices: IDevice[];
-  selectedDevice: IDevice | null;
   isDeleting: boolean;
-  onDeviceSelect: (device: IDevice) => void;
   onDeviceDelete: (deviceId: string) => void;
 }
 
 export function RegisteredDevicesList({
   devices,
-  selectedDevice,
-  onDeviceSelect,
   onDeviceDelete,
   isDeleting,
 }: RegisteredDevicesListProps) {
+  const searchParams = useSearchParams();
+
+  const handleOnDeviceSelect = (value: string) => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("device", value);
+    window.history.pushState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
+  };
+
   if (devices.length === 0) {
     return (
       <Card>
@@ -58,11 +69,11 @@ export function RegisteredDevicesList({
         <Card
           key={device.id}
           className={`cursor-pointer transition-all ${
-            selectedDevice?.id === device.id
+            searchParams.get("device") === device.id
               ? "ring-2 ring-primary bg-accent/50"
               : "hover:bg-accent/30"
           }`}
-          onClick={() => onDeviceSelect(device)}
+          onClick={() => handleOnDeviceSelect(device.id)}
         >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
