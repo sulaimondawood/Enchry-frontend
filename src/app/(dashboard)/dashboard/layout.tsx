@@ -1,7 +1,6 @@
 import { DashboardSidebar } from "@/components/global/sidebar";
-import Image from "next/image";
-import Link from "next/link";
-import React, { Fragment, ReactNode } from "react";
+import DetectDeviceConnectivity from "@/components/user-agent/detect-device-connectivity";
+import React, { ReactNode } from "react";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   return (
@@ -9,7 +8,10 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       <div className="flex">
         <DashboardSidebar />
         <div className="w-full h-screen overflow-auto flex-1">
-          <div className="px-6 max-w-7xl mx-auto">{children}</div>
+          <div className="px-6 max-w-7xl mx-auto">
+            {children}
+            <DetectDeviceConnectivity />
+          </div>
         </div>
       </div>
     </div>

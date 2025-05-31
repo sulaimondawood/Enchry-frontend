@@ -5,6 +5,15 @@ export const ROUTES = {
   contact: "/contact",
   login: "/login",
   signUp: "/sign-up",
+
+  //dashboard
+  dashboard: "/dashboard",
+  dashboardDevice: "/dashboard/devices",
+  dashboardAnalytics: "/dashboard/analytics",
+  dashboardEncryption: "/dashboard/encryption",
+  dashboardSecurityLogs: "/dashboard/security-logs",
+  dashboardSettings: "/dashboard/settings",
+  dashboardSimulator: "/dashboard/simulator",
 };
 
 export const mainNav = [

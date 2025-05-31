@@ -15,23 +15,29 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { Register, RegisterPayload } from "@/services/api/auth";
 
 const Signup = () => {
   const navigate = useRouter();
-  const [name, setName] = useState("");
+  const [fullname, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { mutate, isPending: isLoading } = useMutation({
+    mutationFn: async (data: RegisterPayload) => await Register(data),
+    onSuccess(data, variables, context) {
+      navigate.push("/login");
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate signup
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate.push("/dashboard");
-    }, 1000);
+    mutate({
+      email,
+      password,
+      fullname,
+    });
   };
 
   return (
@@ -69,8 +75,8 @@ const Signup = () => {
                 </label>
                 <Input
                   id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={fullname}
+                  onChange={(e) => setFullName(e.target.value)}
                   disabled={isLoading}
                   required
                 />
