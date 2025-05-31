@@ -18,75 +18,39 @@ import { DeviceRegistrationDialog } from "./_components/DeviceRegistrationDialog
 import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
 import { useQuery } from "@tanstack/react-query";
 import { getDevices } from "@/services/api/simulation";
-
-export interface SimulatedDevice {
-  id: string;
-  name: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
-  type: "temperature" | "humidity" | "both";
-  status: "active" | "inactive";
-  lastReading?: {
-    temperature?: number;
-    humidity?: number;
-    timestamp: Date;
-  };
-}
+import Skeleton from "react-loading-skeleton";
+import { Loader } from "@/components/loader/Loader";
 
 const DeviceSimulatorPage = () => {
-  const [devices, setDevices] = useState<SimulatedDevice[]>([
-    {
-      id: "sim-001",
-      name: "London Office Sensor",
-      location: "London, UK",
-      latitude: 51.5074,
-      longitude: -0.1278,
-      type: "both",
-      status: "active",
-    },
-    {
-      id: "sim-002",
-      name: "NYC Branch Sensor",
-      location: "New York, USA",
-      latitude: 40.7128,
-      longitude: -74.006,
-      type: "temperature",
-      status: "inactive",
-    },
-  ]);
+  const [devices, setDevices] = useState<IDevice[]>([]);
 
-  const [selectedDevice, setSelectedDevice] = useState<SimulatedDevice | null>(
-    null
-  );
+  const [selectedDevice, setSelectedDevice] = useState<IDevice | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   const { toast } = useToast();
   const { isOnline } = useDetectInternetConnection();
 
-  const handleRegisterDevice = (
-    deviceData: Omit<SimulatedDevice, "id" | "status">
-  ) => {
-    const newDevice: SimulatedDevice = {
+  const handleRegisterDevice = (deviceData: Omit<IDevice, "id" | "status">) => {
+    const newDevice: IDevice = {
       ...deviceData,
       id: `sim-${Date.now()}`,
-      status: "inactive",
+      // status: "inactive",
     };
 
-    setDevices((prev) => [...prev, newDevice]);
+    // setDevices((prev) => [...prev, newDevice]);
     toast({
       title: "Device Registered",
-      description: `${deviceData.name} has been successfully registered.`,
+      description: `has been successfully registered.`,
     });
   };
 
-  const handleDeviceUpdate = (updatedDevice: SimulatedDevice) => {
-    setDevices((prev) =>
-      prev.map((device) =>
-        device.id === updatedDevice.id ? updatedDevice : device
-      )
-    );
-  };
+  // const handleDeviceUpdate = (updatedDevice: SimulatedDevice) => {
+  //   setDevices((prev) =>
+  //     prev.map((device) =>
+  //       device.id === updatedDevice.id ? updatedDevice : device
+  //     )
+  //   );
+  // };
 
   const handleDeleteDevice = (deviceId: string) => {
     setDevices((prev) => prev.filter((device) => device.id !== deviceId));
@@ -99,22 +63,26 @@ const DeviceSimulatorPage = () => {
     });
   };
 
-  const activeDevices = devices.filter((device) => device.status === "active");
-  const totalReadings = devices.reduce(
-    (sum, device) => sum + (device.lastReading ? 1 : 0),
-    0
-  );
-
   const {
     data: userDevices,
     isLoading,
     isError,
-  } = useQuery({
+    refetch,
+  } = useQuery<IDevice[]>({
     queryKey: ["devices", "all"],
     queryFn: getDevices,
   });
 
-  console.log(userDevices);
+  const getActiveDevices = () => {
+    if (userDevices) {
+      const filteredDevice = userDevices.filter((device) => {
+        if (device.active) return device.active;
+      });
+
+      return filteredDevice;
+    }
+    return [];
+  };
 
   return (
     <div>
@@ -131,9 +99,11 @@ const DeviceSimulatorPage = () => {
             <Thermometer className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userDevices?.length}</div>
+            <div className="text-2xl font-bold">
+              {userDevices?.length || <Skeleton />}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {activeDevices.length} active
+              {getActiveDevices().length} active
             </p>
           </CardContent>
         </Card>
@@ -146,7 +116,7 @@ const DeviceSimulatorPage = () => {
             <Droplet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalReadings}</div>
+            <div className="text-2xl font-bold">{20}</div>
             <p className="text-xs text-muted-foreground">Sensor data points</p>
           </CardContent>
         </Card>
@@ -186,7 +156,7 @@ const DeviceSimulatorPage = () => {
           {selectedDevice ? (
             <DeviceSimulator
               device={selectedDevice}
-              onDeviceUpdate={handleDeviceUpdate}
+              onDeviceUpdate={() => ""}
             />
           ) : (
             <Card>
@@ -208,12 +178,23 @@ const DeviceSimulatorPage = () => {
 
         <div>
           <h3 className="text-lg font-semibold mb-6">Registered Devices</h3>
-          <RegisteredDevicesList
-            devices={devices}
-            selectedDevice={selectedDevice}
-            onDeviceSelect={setSelectedDevice}
-            onDeviceDelete={handleDeleteDevice}
-          />
+          {isLoading ? (
+            <Loader />
+          ) : isError ? (
+            <div className="text-center">
+              <h1>Something went wrong</h1>
+              <Button onClick={() => refetch()} variant={"outline"}>
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <RegisteredDevicesList
+              devices={userDevices || []}
+              selectedDevice={selectedDevice}
+              onDeviceSelect={setSelectedDevice}
+              onDeviceDelete={handleDeleteDevice}
+            />
+          )}
         </div>
       </div>
 

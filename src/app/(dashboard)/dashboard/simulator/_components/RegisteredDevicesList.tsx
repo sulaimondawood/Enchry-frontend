@@ -17,12 +17,11 @@ import {
   WifiOff,
   Clock,
 } from "lucide-react";
-import { SimulatedDevice } from "../page";
 
 interface RegisteredDevicesListProps {
-  devices: SimulatedDevice[];
-  selectedDevice: SimulatedDevice | null;
-  onDeviceSelect: (device: SimulatedDevice) => void;
+  devices: IDevice[];
+  selectedDevice: IDevice | null;
+  onDeviceSelect: (device: IDevice) => void;
   onDeviceDelete: (deviceId: string) => void;
 }
 
@@ -66,18 +65,16 @@ export function RegisteredDevicesList({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {device.status === "active" ? (
+                {device.active ? (
                   <Wifi className="h-4 w-4 text-green-500" />
                 ) : (
                   <WifiOff className="h-4 w-4 text-red-500" />
                 )}
-                <CardTitle className="text-base">{device.name}</CardTitle>
+                <CardTitle className="text-base">{device.deviceName}</CardTitle>
               </div>
               <div className="flex items-center gap-2">
-                <Badge
-                  variant={device.status === "active" ? "default" : "secondary"}
-                >
-                  {device.status}
+                <Badge variant={device.active ? "default" : "secondary"}>
+                  {device.active ? "Active" : "Inactive"}
                 </Badge>
                 <Button
                   variant="ghost"
@@ -94,7 +91,7 @@ export function RegisteredDevicesList({
             </div>
             <CardDescription className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
-              {device.location}
+              Africa, Nigeria
             </CardDescription>
           </CardHeader>
 
@@ -102,29 +99,33 @@ export function RegisteredDevicesList({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1 text-sm">
-                  {device.type === "temperature" || device.type === "both" ? (
+                  {device.sensorType === "TEMP" ||
+                  device.sensorType === "BOTH" ? (
                     <Thermometer className="h-3 w-3 text-blue-500" />
                   ) : null}
-                  {device.type === "humidity" || device.type === "both" ? (
+                  {device.sensorType === "HUMIDITY" ||
+                  device.sensorType === "BOTH" ? (
                     <Droplet className="h-3 w-3 text-teal-500" />
                   ) : null}
                   <span className="text-muted-foreground capitalize">
-                    {device.type === "both"
+                    {device.sensorType === "BOTH"
                       ? "Temperature & Humidity"
-                      : device.type}
+                      : device.sensorType === "TEMP"
+                      ? "Temperature"
+                      : "Humidity"}
                   </span>
                 </div>
               </div>
 
-              {device.lastReading && (
+              {/* {device.lastReading && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
                   {device.lastReading.timestamp.toLocaleTimeString()}
                 </div>
-              )}
+              )} */}
             </div>
 
-            {device.lastReading && (
+            {/* {device.lastReading && (
               <div className="mt-3 p-2 bg-muted/50 rounded-md">
                 <div className="flex items-center gap-4 text-sm">
                   {device.lastReading.temperature !== undefined && (
@@ -145,7 +146,7 @@ export function RegisteredDevicesList({
                   )}
                 </div>
               </div>
-            )}
+            )} */}
           </CardContent>
         </Card>
       ))}
