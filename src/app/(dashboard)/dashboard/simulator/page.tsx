@@ -22,9 +22,9 @@ import axios from "axios";
 export interface SimulatedDevice {
   id: string;
   name: string;
-  location: string;
-  latitude: number;
-  longitude: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
   type: "temperature" | "humidity" | "both";
   status: "active" | "inactive";
   lastReading?: {

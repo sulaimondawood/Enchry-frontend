@@ -222,7 +222,7 @@ export function DeviceSimulator({
             <div>
               <span className="text-muted-foreground">Coordinates:</span>
               <div>
-                {device.latitude.toFixed(4)}, {device.longitude.toFixed(4)}
+                {/* {device.latitude.toFixed(4)}, {device.longitude.toFixed(4)} */}
               </div>
             </div>
             <div>
