@@ -39,3 +39,14 @@ export const deleteDevice = async (deviceId: string) => {
     throw error;
   }
 };
+
+export const toggleDeviceStatus = async (deviceId: string, param: boolean) => {
+  try {
+    const res = await api.patch(
+      `/devices/${deviceId}/status?activate=${param}`
+    );
+    return res.data;
+  } catch (error) {
+    throw error;
+  }
+};

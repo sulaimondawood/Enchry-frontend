@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Play,
   Square,
@@ -23,8 +22,13 @@ import {
   RotateCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toggleDeviceStatus } from "@/services/api/simulation";
+import { useSearchParams } from "next/navigation";
+import { toast as toastMsg } from "sonner";
+import { queryClient } from "@/services/providers/tanstack-provider";
 
 interface DeviceSimulatorProps {
   device: IDevice;
@@ -41,7 +45,10 @@ export function DeviceSimulator({
   onDeviceUpdate,
 }: DeviceSimulatorProps) {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const controllerRef = useRef(new AbortController());
+
+  const deviceID = searchParams.get("device") || "";
 
   // const toggleDeviceStatus = () => {
   //   const updatedDevice: SimulatedDevice = {
@@ -50,6 +57,17 @@ export function DeviceSimulator({
   //   };
   //   onDeviceUpdate(updatedDevice);
   // };
+
+  const { mutate, isPending: isLoadingDeviceStatus } = useMutation({
+    mutationFn: async (payload: boolean) =>
+      toggleDeviceStatus(deviceID, payload),
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ["devices", "all"],
+      });
+      toastMsg("Device status updated");
+    },
+  });
 
   //Get data from open-metro
   const {
@@ -72,10 +90,6 @@ export function DeviceSimulator({
     enabled: false,
     retry: false,
   });
-
-  // const {} = useMutation({
-  //   mutationFn:async()
-  // })
 
   //Manually Fetch
   const handleClimateDataFetch = () => {
@@ -130,7 +144,7 @@ export function DeviceSimulator({
         <div className="flex gap-3">
           <Button
             onClick={handleClimateDataFetch}
-            disabled={isLoading || device?.active}
+            disabled={isLoading}
             className="flex-1"
           >
             {isLoading ? (
@@ -153,9 +167,25 @@ export function DeviceSimulator({
             </Button>
           )}
 
-          <Button onClick={() => ""} variant="outline">
-            {device.active ? "Deactivate" : "Activate"}
-          </Button>
+          {device.active ? (
+            <Button
+              onClick={() => mutate(false)}
+              variant="outline"
+              disabled={isLoadingDeviceStatus}
+              className="disabled:cursor-not-allowed"
+            >
+              {isLoadingDeviceStatus ? "Deactivating..." : "Deactivate"}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => mutate(true)}
+              variant="outline"
+              disabled={isLoadingDeviceStatus}
+              className="disabled:cursor-not-allowed"
+            >
+              {isLoadingDeviceStatus ? "Activating..." : "Activate"}
+            </Button>
+          )}
         </div>
 
         {/* Sensor Readings */}
