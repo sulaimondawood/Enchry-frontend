@@ -29,6 +29,7 @@ import { toggleDeviceStatus } from "@/services/api/simulation";
 import { useSearchParams } from "next/navigation";
 import { toast as toastMsg } from "sonner";
 import { queryClient } from "@/services/providers/tanstack-provider";
+import { getDeviceGeoPoints } from "@/utils";
 
 interface DeviceSimulatorProps {
   device: IDevice;
@@ -66,8 +67,8 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     queryFn: async ({ signal }) => {
       const res = await axios.get("https://api.open-meteo.com/v1/forecast", {
         params: {
-          latitude: 52.52,
-          longitude: 13.41,
+          latitude: JSON.parse(sessionStorage?.getItem("location")!).lat,
+          longitude: JSON.parse(sessionStorage?.getItem("location")!).long,
           current: ["temperature_2m", "relative_humidity_2m"],
         },
         signal: signal || controllerRef.current.signal,
@@ -91,6 +92,21 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
       title: "Scan Stopped",
       description: "Sensor scanning has been stopped",
     });
+  };
+
+  const handleToggleDevieStatus = async (status: boolean) => {
+    const stored = sessionStorage?.getItem("location");
+    const location: { lat: string; long: string } =
+      stored && JSON.parse(stored);
+
+    if (!location && status) {
+      getDeviceGeoPoints((coords) => {
+        sessionStorage.setItem("location", JSON.stringify(coords));
+        mutate(status); // Only call mutate after getting location
+      });
+    } else {
+      mutate(status);
+    }
   };
 
   return (
@@ -156,7 +172,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
           {device.active ? (
             <Button
-              onClick={() => mutate(false)}
+              onClick={() => handleToggleDevieStatus(false)}
               variant="outline"
               disabled={isLoadingDeviceStatus}
               className="disabled:cursor-not-allowed"
@@ -165,7 +181,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
             </Button>
           ) : (
             <Button
-              onClick={() => mutate(true)}
+              onClick={() => handleToggleDevieStatus(true)}
               variant="outline"
               disabled={isLoadingDeviceStatus}
               className="disabled:cursor-not-allowed"
