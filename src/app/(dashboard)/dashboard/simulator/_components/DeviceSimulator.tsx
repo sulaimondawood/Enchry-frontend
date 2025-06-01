@@ -32,7 +32,6 @@ import { queryClient } from "@/services/providers/tanstack-provider";
 
 interface DeviceSimulatorProps {
   device: IDevice;
-  onDeviceUpdate: (device: IDevice) => void;
 }
 
 interface WeatherData {
@@ -40,23 +39,11 @@ interface WeatherData {
   humidity: number;
 }
 
-export function DeviceSimulator({
-  device,
-  onDeviceUpdate,
-}: DeviceSimulatorProps) {
+export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const controllerRef = useRef(new AbortController());
-
   const deviceID = searchParams.get("device") || "";
-
-  // const toggleDeviceStatus = () => {
-  //   const updatedDevice: SimulatedDevice = {
-  //     ...device,
-  //     status: device.stat === "active" ? "inactive" : "active",
-  //   };
-  //   onDeviceUpdate(updatedDevice);
-  // };
 
   const { mutate, isPending: isLoadingDeviceStatus } = useMutation({
     mutationFn: async (payload: boolean) =>
@@ -144,7 +131,7 @@ export function DeviceSimulator({
         <div className="flex gap-3">
           <Button
             onClick={handleClimateDataFetch}
-            disabled={isLoading}
+            disabled={!device.active || isLoading}
             className="flex-1"
           >
             {isLoading ? (

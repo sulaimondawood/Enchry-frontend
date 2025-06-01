@@ -60,13 +60,11 @@ export function EncryptionConfigCard({
                 </TooltipContent>
               </Tooltip>
             </div>
-            <Select defaultValue="256">
+            <Select defaultValue="256" disabled>
               <SelectTrigger id="keySize">
                 <SelectValue placeholder="Select key size" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="128">128-bit</SelectItem>
-                <SelectItem value="192">192-bit</SelectItem>
                 <SelectItem value="256">256-bit (Recommended)</SelectItem>
               </SelectContent>
             </Select>
@@ -87,13 +85,11 @@ export function EncryptionConfigCard({
                 </TooltipContent>
               </Tooltip>
             </div>
-            <Select defaultValue="20">
+            <Select defaultValue="20" disabled>
               <SelectTrigger id="rounds">
                 <SelectValue placeholder="Select rounds" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="8">8 rounds (Faster)</SelectItem>
-                <SelectItem value="12">12 rounds</SelectItem>
                 <SelectItem value="20">20 rounds (Standard)</SelectItem>
               </SelectContent>
             </Select>
