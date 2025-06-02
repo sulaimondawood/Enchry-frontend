@@ -44,14 +44,14 @@ export async function encryptSensorData(
       sharedKey
     );
 
-    // Encrypt data using ChaCha20-Poly1305 (IETF variant)
+    // Encrypt data using ChaCha20-Poly1305
     const nonce = sodium.randombytes_buf(
-      sodium.crypto_aead_chacha20poly1305_ietf_NPUBBYTES
+      sodium.crypto_aead_chacha20poly1305_NPUBBYTES
     ); // 12-byte nonce
     const message = JSON.stringify({ temperature, humidity });
     const messageBytes = sodium.from_string(message);
 
-    const ciphertext = sodium.crypto_aead_chacha20poly1305_ietf_encrypt(
+    const ciphertext = sodium.crypto_aead_chacha20poly1305_encrypt(
       messageBytes,
       null,
       null, // nsec (not used)
