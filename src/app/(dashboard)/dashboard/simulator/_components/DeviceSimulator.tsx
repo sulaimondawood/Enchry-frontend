@@ -35,11 +35,6 @@ interface DeviceSimulatorProps {
   device: IDevice;
 }
 
-interface WeatherData {
-  temperature: number;
-  humidity: number;
-}
-
 export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   const { toast } = useToast();
   const searchParams = useSearchParams();

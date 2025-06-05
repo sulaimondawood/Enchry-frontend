@@ -13,14 +13,11 @@ export async function encryptSensorData(
   temperature: number,
   humidity: number,
   // serverPublicKey: Uint8Array, // Provided by the backend
-  // deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }, // Reused device key pair
+  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }, // Reused device key pair
   info: string = "device-123-session1" // Configurable context
 ): Promise<EncryptSensorDataResult> {
   try {
     await sodium.ready;
-
-    // Device key pair generation
-    const deviceKeyPair = sodium.crypto_kx_keypair();
 
     // Simulate server public key (replace with real one from backend)
     const serverKeyPair = sodium.crypto_kx_keypair();
