@@ -29,7 +29,11 @@ import { toggleDeviceStatus } from "@/services/api/simulation";
 import { useSearchParams } from "next/navigation";
 import { toast as toastMsg } from "sonner";
 import { queryClient } from "@/services/providers/tanstack-provider";
-import { getDeviceGeoPoints } from "@/utils";
+import { generateDeviceKeyPairs, getDeviceGeoPoints } from "@/utils";
+import { api } from "@/services/api";
+import { encryptSensorData } from "@/hooks/use-encryption";
+import { getLatestClimateReading } from "@/services/api/climate";
+import { Loader } from "@/components/loader/Loader";
 
 interface DeviceSimulatorProps {
   device: IDevice;
@@ -52,33 +56,77 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     },
   });
 
-  //Get data from open-metro
   const {
-    data: climateDataFetch,
-    refetch,
-    isFetching: isLoading,
+    data: latestClimateReading,
+    isLoading: isLoadingLatestClimateReading,
+    refetch: handleLatestClimateRefetch,
   } = useQuery({
-    queryKey: ["open-metro", "api"],
-    queryFn: async ({ signal }) => {
-      const res = await axios.get("https://api.open-meteo.com/v1/forecast", {
-        params: {
-          latitude: JSON.parse(sessionStorage?.getItem("location")!).lat,
-          longitude: JSON.parse(sessionStorage?.getItem("location")!).long,
-          current: ["temperature_2m", "relative_humidity_2m"],
-        },
-        signal: signal || controllerRef.current.signal,
-      });
-      return res.data;
-    },
-    enabled: false,
-    retry: false,
+    queryKey: ["climate", "latest"],
+    queryFn: getLatestClimateReading,
+    enabled: !!deviceID,
   });
 
-  //Manually Fetch
-  const handleClimateDataFetch = () => {
-    refetch();
-    controllerRef.current = new AbortController(); // Reset for future requests
-  };
+  //Get data from open-metro
+  const { mutate: fetchAndStoreClimateData, isPending: isLoading } =
+    useMutation({
+      mutationFn: async (): Promise<void> => {
+        const locationData = sessionStorage.getItem("location");
+
+        if (!locationData) {
+          toastMsg.error("Location not found");
+          throw new Error("Location missing from sessionStorage");
+        }
+
+        const { lat, long } = JSON.parse(locationData);
+
+        const res = await axios.get("https://api.open-meteo.com/v1/forecast", {
+          params: {
+            latitude: lat,
+            longitude: long,
+            current: ["temperature_2m", "relative_humidity_2m"],
+          },
+        });
+
+        const {
+          current: { temperature_2m, relative_humidity_2m },
+        } = res.data;
+
+        let deviceKeypair;
+
+        if (deviceID) {
+          deviceKeypair = await generateDeviceKeyPairs(deviceID);
+        } else {
+          throw new Error("No device ID found");
+        }
+
+        toastMsg.info("Encrypting data...");
+
+        const { ciphertext, devicePublicKey, nonce } = await encryptSensorData(
+          temperature_2m,
+          relative_humidity_2m,
+          deviceKeypair
+        );
+
+        const createRes = await api.post("/climate", {
+          sensoredData: ciphertext,
+          nonce,
+          time: res?.data?.current?.time,
+          deviceId: deviceID,
+          timezone: res.data.timezone || "",
+          longitude: res?.data?.longitude,
+          latitude: res?.data?.latitude,
+        });
+
+        return createRes.data;
+      },
+      onSuccess: () => {
+        toastMsg.success("Climate data saved");
+        queryClient.invalidateQueries({ queryKey: ["climate", "latest"] });
+      },
+      onError: (err) => {
+        toastMsg.error("Failed to store climate data");
+      },
+    });
 
   // Function to manually abort the request
   const handleCancel = () => {
@@ -141,7 +189,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         {/* Device Controls */}
         <div className="flex gap-3">
           <Button
-            onClick={handleClimateDataFetch}
+            onClick={() => fetchAndStoreClimateData()}
             disabled={!device.active || isLoading}
             className="flex-1"
           >
@@ -187,15 +235,18 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         </div>
 
         {/* Sensor Readings */}
-        {/* {device.lastReading && (
-          <div className="space-y-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Latest Reading
-            </h4>
+        {isLoadingLatestClimateReading ? (
+          <Loader />
+        ) : (
+          latestClimateReading && (
+            <div className="space-y-4">
+              <h4 className="font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Latest Reading
+              </h4>
 
-            <div className="grid grid-cols-1 gap-4">
-              {device.lastReading.temperature !== undefined && (
+              <div className="grid grid-cols-1 gap-4">
+                {/* {device.lastReading.temperature !== undefined && (
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -214,9 +265,9 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              )} */}
 
-              {device.lastReading.humidity !== undefined && (
+                {/* {device.lastReading.humidity !== undefined && (
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -235,10 +286,11 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              )} */}
+              </div>
             </div>
-          </div>
-        )} */}
+          )
+        )}
 
         {/* Device Info */}
         <div className="pt-4 border-t">

@@ -158,7 +158,7 @@ const DeviceSimulatorPage = () => {
           {isLoadingDevice ? (
             <Loader />
           ) : searchParams.get("device") ? (
-            <DeviceSimulator device={device!} onDeviceUpdate={() => ""} />
+            <DeviceSimulator device={device!} />
           ) : (
             <Card>
               <CardHeader>

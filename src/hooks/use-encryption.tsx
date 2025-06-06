@@ -4,17 +4,24 @@ interface EncryptSensorDataResult {
   ciphertext: string;
   nonce: string;
   devicePublicKey: string;
-  salt: string;
-  info: string;
   additionalData?: string;
+}
+
+interface EncryptSensorDataResponse {
+  sensoredData: string;
+  nonce: string;
+  salt: string;
+  time: string;
+  timezone: string;
+  longitude: number;
+  latitude: number;
 }
 
 export async function encryptSensorData(
   temperature: number,
   humidity: number,
   // serverPublicKey: Uint8Array, // Provided by the backend
-  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }, // Reused device key pair
-  info: string = "device-123-session1" // Configurable context
+  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array } // Reused device key pair
 ): Promise<EncryptSensorDataResult> {
   try {
     await sodium.ready;
@@ -33,11 +40,10 @@ export async function encryptSensorData(
     const sharedKey = sessionKeys.sharedRx;
 
     // Derive encryption key using HKDF
-    const salt = sodium.randombytes_buf(16);
     const derivedKey = sodium.crypto_kdf_derive_from_key(
       32, // 256-bit key
       1, // Key ID
-      info,
+      "",
       sharedKey
     );
 
@@ -60,10 +66,55 @@ export async function encryptSensorData(
       ciphertext: sodium.to_base64(ciphertext),
       nonce: sodium.to_base64(nonce),
       devicePublicKey: sodium.to_base64(deviceKeyPair.publicKey),
-      salt: sodium.to_base64(salt),
-      info, // Return as plain string
     };
   } catch (error: any) {
     throw new Error(`Encryption failed: ${error?.message}`);
   }
 }
+
+export const decryptSensorData = async (
+  encryptedData: EncryptSensorDataResponse,
+  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }
+) => {
+  try {
+    await sodium.ready;
+
+    // Decode inputs
+    const ciphertext = sodium.from_base64(encryptedData.sensoredData);
+    const nonce = sodium.from_base64(encryptedData.nonce);
+
+    // Simulate server public key (replace with real one from backend)
+    const serverKeyPair = sodium.crypto_kx_keypair();
+    // Derive shared secret using key exchange (Elliptic Curve Diffie Hellman)
+    const sessionKeys = sodium.crypto_kx_client_session_keys(
+      deviceKeyPair.publicKey,
+      deviceKeyPair.privateKey,
+      serverKeyPair.publicKey
+    );
+
+    // Uses the receive key for client-to-server encryption
+    const sharedKey = sessionKeys.sharedRx;
+
+    // Derive encryption key using HKDF
+    const derivedKey = sodium.crypto_kdf_derive_from_key(
+      32, // 256-bit key
+      1, // Key ID
+      "",
+      sharedKey
+    );
+
+    const decryptedBytes = sodium.crypto_aead_chacha20poly1305_decrypt(
+      null,
+      ciphertext,
+      null,
+      nonce,
+      derivedKey
+    );
+
+    // Parse decrypted data
+    const decryptedMessage = sodium.to_string(decryptedBytes);
+    return JSON.parse(decryptedMessage);
+  } catch (error: any) {
+    throw new Error(`Decryption failed: ${error.message}`);
+  }
+};
