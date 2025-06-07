@@ -38,6 +38,7 @@ import { api } from "@/services/api";
 import { decryptSensorData, encryptSensorData } from "@/hooks/use-encryption";
 import { getLatestClimateReading, getSystemKey } from "@/services/api/climate";
 import { Loader } from "@/components/loader/Loader";
+import { format } from "date-fns";
 
 interface DeviceSimulatorProps {
   device: IDevice;
@@ -305,47 +306,54 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
               </h4>
 
               <div className="grid grid-cols-1 gap-4">
-                {/* {device.lastReading.temperature !== undefined && (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Thermometer className="h-5 w-5 text-blue-500" />
-                        <span className="font-medium">Temperature</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">
-                          {device.lastReading.temperature}°C
+                {latestClimateReading?.sensoredData?.temperature && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Thermometer className="h-5 w-5 text-blue-500" />
+                          <span className="font-medium">Temperature</span>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {device.lastReading.timestamp.toLocaleTimeString()}
+                        <div className="text-right">
+                          <div className="text-2xl font-bold">
+                            {latestClimateReading?.sensoredData?.temperature}
+                            °C
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(
+                              latestClimateReading?.timestamp,
+                              "dd-MM-yyyy"
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )} */}
+                    </CardContent>
+                  </Card>
+                )}
 
-                {/* {device.lastReading.humidity !== undefined && (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Droplet className="h-5 w-5 text-teal-500" />
-                        <span className="font-medium">Humidity</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold">
-                          {device.lastReading.humidity}%
+                {latestClimateReading?.sensoredData?.humidity && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Droplet className="h-5 w-5 text-teal-500" />
+                          <span className="font-medium">Humidity</span>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {device.lastReading.timestamp.toLocaleTimeString()}
+                        <div className="text-right">
+                          <div className="text-2xl font-bold">
+                            {latestClimateReading?.sensoredData?.humidity}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(
+                              latestClimateReading?.timestamp,
+                              "dd-MM-yyyy"
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )} */}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           )
@@ -358,7 +366,8 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
             <div>
               <span className="text-muted-foreground">Coordinates:</span>
               <div>
-                {/* {device.latitude.toFixed(4)}, {device.longitude.toFixed(4)} */}
+                {latestClimateReading?.latitude.toFixed(4)},{" "}
+                {latestClimateReading?.longitude.toFixed(4)}
               </div>
             </div>
             <div>
