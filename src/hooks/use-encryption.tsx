@@ -8,13 +8,8 @@ interface EncryptSensorDataResult {
 }
 
 interface EncryptSensorDataResponse {
-  sensoredData: string;
+  cipherText: string;
   nonce: string;
-  salt: string;
-  time: string;
-  timezone: string;
-  longitude: number;
-  latitude: number;
 }
 
 export async function encryptSensorData(
@@ -40,7 +35,7 @@ export async function encryptSensorData(
     const derivedKey = sodium.crypto_kdf_derive_from_key(
       32, // 256-bit key
       1, // Key ID
-      "",
+      "climate-sensor",
       sharedKey
     );
 
@@ -80,7 +75,7 @@ export const decryptSensorData = async (
     await sodium.ready;
 
     // Decode inputs
-    const ciphertext = sodium.from_base64(encryptedData.sensoredData);
+    const ciphertext = sodium.from_base64(encryptedData.cipherText);
     const nonce = sodium.from_base64(encryptedData.nonce);
 
     // Derive shared secret using key exchange (Elliptic Curve Diffie Hellman)
@@ -97,7 +92,7 @@ export const decryptSensorData = async (
     const derivedKey = sodium.crypto_kdf_derive_from_key(
       32, // 256-bit key
       1, // Key ID
-      "",
+      "climate-sensor",
       sharedKey
     );
 
@@ -113,6 +108,8 @@ export const decryptSensorData = async (
     const decryptedMessage = sodium.to_string(decryptedBytes);
     return JSON.parse(decryptedMessage);
   } catch (error: any) {
+    console.log(error);
+
     throw new Error(`Decryption failed: ${error.message}`);
   }
 };

@@ -87,7 +87,10 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   } = useQuery({
     queryKey: ["climate", "latest"],
     queryFn: async () => {
-      const { sensoredData, ...rest } = await getLatestClimateReading();
+      const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
+
+      console.log(rest);
+
       const deviceKeyPair = await generateDeviceKeyPairs(deviceID);
 
       if (!fetchAndStoreSystemPublicKey) {
@@ -95,14 +98,15 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
       }
 
       const decryptedData = await decryptSensorData(
-        sensoredData,
+        {
+          cipherText: sensoredData,
+          nonce,
+        },
         deviceKeyPair,
         fetchAndStoreSystemPublicKey!
       );
 
-      console.log("hello");
-      console.log(decryptedData);
-      console.log("hello");
+      console.log("decrpyted");
 
       return {
         sensoredData: decryptedData,
@@ -154,17 +158,12 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
           throw new Error("Server public key not found");
         }
 
-        console.log("device key pair", deviceKeypair);
-        console.log("server key pair", fetchAndStoreSystemPublicKey);
-
         const { ciphertext, nonce } = await encryptSensorData(
           temperature_2m,
           relative_humidity_2m,
           fetchAndStoreSystemPublicKey,
           deviceKeypair
         );
-
-        console.log("server public key", fetchAndStoreSystemPublicKey);
 
         const createRes = await api.post("/climate", {
           sensoredData: ciphertext,
@@ -180,6 +179,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
       },
       onSuccess: () => {
         toastMsg.success("Climate data saved");
+        handleLatestClimateRefetch();
         queryClient.invalidateQueries({ queryKey: ["climate", "latest"] });
       },
       onError: (err) => {
