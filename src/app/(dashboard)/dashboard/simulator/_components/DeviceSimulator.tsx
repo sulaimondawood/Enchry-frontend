@@ -29,10 +29,14 @@ import { toggleDeviceStatus } from "@/services/api/simulation";
 import { useSearchParams } from "next/navigation";
 import { toast as toastMsg } from "sonner";
 import { queryClient } from "@/services/providers/tanstack-provider";
-import { generateDeviceKeyPairs, getDeviceGeoPoints } from "@/utils";
+import {
+  generateDeviceKeyPairs,
+  getDeviceGeoPoints,
+  toSodiumByteArray,
+} from "@/utils";
 import { api } from "@/services/api";
-import { encryptSensorData } from "@/hooks/use-encryption";
-import { getLatestClimateReading } from "@/services/api/climate";
+import { decryptSensorData, encryptSensorData } from "@/hooks/use-encryption";
+import { getLatestClimateReading, getSystemKey } from "@/services/api/climate";
 import { Loader } from "@/components/loader/Loader";
 
 interface DeviceSimulatorProps {
@@ -56,15 +60,59 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     },
   });
 
+  const { data: fetchAndStoreSystemPublicKey } = useQuery({
+    queryKey: ["system", "key"],
+    queryFn: async () => {
+      const key = localStorage?.getItem("key");
+
+      if (key) {
+        const parsed = JSON.parse(key);
+        return new Uint8Array(Object.values(parsed));
+      } else {
+        const systemPublicKey = await getSystemKey();
+        const systemPublicKeyToByteArray = await toSodiumByteArray(
+          systemPublicKey
+        );
+        localStorage.setItem("key", JSON.stringify(systemPublicKeyToByteArray));
+        return systemPublicKeyToByteArray;
+      }
+    },
+    enabled: !!deviceID,
+  });
+
   const {
     data: latestClimateReading,
     isLoading: isLoadingLatestClimateReading,
     refetch: handleLatestClimateRefetch,
   } = useQuery({
     queryKey: ["climate", "latest"],
-    queryFn: getLatestClimateReading,
+    queryFn: async () => {
+      const { sensoredData, ...rest } = await getLatestClimateReading();
+      const deviceKeyPair = await generateDeviceKeyPairs(deviceID);
+
+      if (!fetchAndStoreSystemPublicKey) {
+        toastMsg.error("Server public key is missing");
+      }
+
+      const decryptedData = await decryptSensorData(
+        sensoredData,
+        deviceKeyPair,
+        fetchAndStoreSystemPublicKey!
+      );
+
+      console.log("hello");
+      console.log(decryptedData);
+      console.log("hello");
+
+      return {
+        sensoredData: decryptedData,
+        ...rest,
+      };
+    },
     enabled: !!deviceID,
   });
+
+  console.log(latestClimateReading);
 
   //Get data from open-metro
   const { mutate: fetchAndStoreClimateData, isPending: isLoading } =
@@ -101,11 +149,22 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
         toastMsg.info("Encrypting data...");
 
-        const { ciphertext, devicePublicKey, nonce } = await encryptSensorData(
+        if (!fetchAndStoreSystemPublicKey) {
+          toastMsg.error("Server public key is missing");
+          throw new Error("Server public key not found");
+        }
+
+        console.log("device key pair", deviceKeypair);
+        console.log("server key pair", fetchAndStoreSystemPublicKey);
+
+        const { ciphertext, nonce } = await encryptSensorData(
           temperature_2m,
           relative_humidity_2m,
+          fetchAndStoreSystemPublicKey,
           deviceKeypair
         );
+
+        console.log("server public key", fetchAndStoreSystemPublicKey);
 
         const createRes = await api.post("/climate", {
           sensoredData: ciphertext,

@@ -20,20 +20,17 @@ interface EncryptSensorDataResponse {
 export async function encryptSensorData(
   temperature: number,
   humidity: number,
-  // serverPublicKey: Uint8Array, // Provided by the backend
+  serverPublicKey: Uint8Array, // Provided by the backend
   deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array } // Reused device key pair
 ): Promise<EncryptSensorDataResult> {
   try {
     await sodium.ready;
 
-    // Simulate server public key (replace with real one from backend)
-    const serverKeyPair = sodium.crypto_kx_keypair();
-
     // Derive shared secret using key exchange (Elliptic Curve Diffie Hellman)
     const sessionKeys = sodium.crypto_kx_client_session_keys(
       deviceKeyPair.publicKey,
       deviceKeyPair.privateKey,
-      serverKeyPair.publicKey
+      serverPublicKey
     );
 
     // Uses the receive key for client-to-server encryption
@@ -68,13 +65,16 @@ export async function encryptSensorData(
       devicePublicKey: sodium.to_base64(deviceKeyPair.publicKey),
     };
   } catch (error: any) {
+    console.log(error);
+
     throw new Error(`Encryption failed: ${error?.message}`);
   }
 }
 
 export const decryptSensorData = async (
   encryptedData: EncryptSensorDataResponse,
-  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array }
+  deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array },
+  serverPublicKey: Uint8Array
 ) => {
   try {
     await sodium.ready;
@@ -83,13 +83,11 @@ export const decryptSensorData = async (
     const ciphertext = sodium.from_base64(encryptedData.sensoredData);
     const nonce = sodium.from_base64(encryptedData.nonce);
 
-    // Simulate server public key (replace with real one from backend)
-    const serverKeyPair = sodium.crypto_kx_keypair();
     // Derive shared secret using key exchange (Elliptic Curve Diffie Hellman)
     const sessionKeys = sodium.crypto_kx_client_session_keys(
       deviceKeyPair.publicKey,
       deviceKeyPair.privateKey,
-      serverKeyPair.publicKey
+      serverPublicKey
     );
 
     // Uses the receive key for client-to-server encryption

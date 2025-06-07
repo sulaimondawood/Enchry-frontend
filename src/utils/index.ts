@@ -63,3 +63,20 @@ export const generateDeviceKeyPairs = async (deviceId: string) => {
     throw new Error("Failed to generate key pairs");
   }
 };
+
+export const toSodiumByteArray = async (key: string) => {
+  try {
+    // Ensure sodium is ready
+    await sodium.ready;
+
+    // Convert to uint8Array
+    const uint8Array = sodium.from_base64(key);
+
+    console.log("Converted Uint8Array:", uint8Array);
+
+    return uint8Array;
+  } catch (error) {
+    console.error("Error converting Base64 to Uint8Array:", error);
+    throw error;
+  }
+};
