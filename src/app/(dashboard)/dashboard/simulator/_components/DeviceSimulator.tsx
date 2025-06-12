@@ -99,6 +99,11 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
       const deviceKeyPair = await generateDeviceKeyPairs(deviceID);
 
+      sessionStorage.setItem(
+        "devicePublicKey",
+        JSON.stringify(deviceKeyPair.publicKey)
+      );
+
       if (!fetchAndStoreSystemPublicKey) {
         toastMsg.error("Server public key is missing");
       }
@@ -153,10 +158,6 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
         if (deviceID) {
           deviceKeypair = await generateDeviceKeyPairs(deviceID);
-          sessionStorage.setItem(
-            "devicePublicKey",
-            JSON.stringify(deviceKeypair.publicKey)
-          );
         } else {
           throw new Error("No device ID found");
         }
@@ -219,13 +220,13 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         sessionStorage.setItem("location", JSON.stringify(coords));
         mutate({
           status,
-          devicePublicKey: localStorage.getItem("devicePublicKey")!,
+          devicePublicKey,
         }); // Only call mutate after getting location
       });
     } else {
       mutate({
         status,
-        devicePublicKey: localStorage.getItem("devicePublicKey")!,
+        devicePublicKey,
       });
     }
   };
