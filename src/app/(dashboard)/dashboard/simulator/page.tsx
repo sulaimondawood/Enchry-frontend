@@ -30,16 +30,6 @@ const DeviceSimulatorPage = () => {
   const { isOnline } = useDetectInternetConnection();
   const searchParams = useSearchParams();
 
-  console.log(searchParams.get("device"));
-
-  // const handleDeviceUpdate = (updatedDevice: SimulatedDevice) => {
-  //   setDevices((prev) =>
-  //     prev.map((device) =>
-  //       device.id === updatedDevice.id ? updatedDevice : device
-  //     )
-  //   );
-  // };
-
   const { mutate: handleDeleteDevice, isPending: isDeletingDevice } =
     useMutation({
       mutationFn: async (deviceId: string) => await deleteDevice(deviceId),

@@ -72,11 +72,24 @@ export const toSodiumByteArray = async (key: string) => {
     // Convert to uint8Array
     const uint8Array = sodium.from_base64(key);
 
-    console.log("Converted Uint8Array:", uint8Array);
-
     return uint8Array;
   } catch (error) {
     console.error("Error converting Base64 to Uint8Array:", error);
+    throw error;
+  }
+};
+
+export const toSodiumBase64 = async (key: Uint8Array) => {
+  try {
+    // Ensure sodium is ready
+    await sodium.ready;
+
+    // Convert to uint8Array
+    const uint8Array = sodium.to_base64(key);
+
+    return uint8Array;
+  } catch (error) {
+    console.error("Error converting Uint8Array to Base64:", error);
     throw error;
   }
 };

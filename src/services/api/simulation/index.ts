@@ -46,9 +46,12 @@ export const toggleDeviceStatus = async (
   devicePublicKey: string
 ) => {
   try {
-    const res = await api.patch(
-      `/devices/${deviceId}/status?activate=${param}?key=${devicePublicKey}`
-    );
+    const res = await api.patch(`/devices/${deviceId}/status`, null, {
+      params: {
+        activate: param,
+        key: devicePublicKey,
+      },
+    });
     return res.data;
   } catch (error) {
     throw error;

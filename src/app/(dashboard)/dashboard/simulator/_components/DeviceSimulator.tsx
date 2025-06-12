@@ -32,6 +32,7 @@ import { queryClient } from "@/services/providers/tanstack-provider";
 import {
   generateDeviceKeyPairs,
   getDeviceGeoPoints,
+  toSodiumBase64,
   toSodiumByteArray,
 } from "@/utils";
 import { api } from "@/services/api";
@@ -69,7 +70,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   const { data: fetchAndStoreSystemPublicKey } = useQuery({
     queryKey: ["system", "key"],
     queryFn: async () => {
-      const key = localStorage?.getItem("key");
+      const key = localStorage?.getItem("serverPublickey");
 
       if (key) {
         const parsed = JSON.parse(key);
@@ -79,7 +80,10 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         const systemPublicKeyToByteArray = await toSodiumByteArray(
           systemPublicKey
         );
-        localStorage.setItem("key", JSON.stringify(systemPublicKeyToByteArray));
+        localStorage.setItem(
+          "serverPublickey",
+          JSON.stringify(systemPublicKeyToByteArray)
+        );
         return systemPublicKeyToByteArray;
       }
     },
@@ -91,18 +95,15 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     isLoading: isLoadingLatestClimateReading,
     refetch: handleLatestClimateRefetch,
   } = useQuery({
-    queryKey: ["climate", "latest"],
+    queryKey: ["climate", "latest", deviceID],
     queryFn: async () => {
-      const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
-
-      console.log(rest);
-
       const deviceKeyPair = await generateDeviceKeyPairs(deviceID);
+      const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
+      console.log(deviceKeyPair);
 
-      sessionStorage.setItem(
-        "devicePublicKey",
-        JSON.stringify(deviceKeyPair.publicKey)
-      );
+      const devicePublicKey = await toSodiumBase64(deviceKeyPair.publicKey);
+
+      sessionStorage.setItem("devicePublicKey", devicePublicKey);
 
       if (!fetchAndStoreSystemPublicKey) {
         toastMsg.error("Server public key is missing");
@@ -117,8 +118,6 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         fetchAndStoreSystemPublicKey!
       );
 
-      console.log("decrpyted");
-
       return {
         sensoredData: decryptedData,
         ...rest,
@@ -126,8 +125,6 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     },
     enabled: !!deviceID,
   });
-
-  console.log(latestClimateReading);
 
   //Get data from open-metro
   const { mutate: fetchAndStoreClimateData, isPending: isLoading } =
@@ -297,7 +294,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
               onClick={() =>
                 handleToggleDevieStatus(
                   false,
-                  localStorage.getItem("devicePublicKey") || ""
+                  sessionStorage.getItem("devicePublicKey") || ""
                 )
               }
               variant="outline"
@@ -311,7 +308,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
               onClick={() =>
                 handleToggleDevieStatus(
                   true,
-                  localStorage.getItem("devicePublicKey") || ""
+                  sessionStorage.getItem("devicePublicKey") || ""
                 )
               }
               variant="outline"
