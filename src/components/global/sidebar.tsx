@@ -91,11 +91,7 @@ export function DashboardSidebar() {
               icon={Shield}
               label="ChaCha-20 Settings"
             />
-            <SidebarLink
-              to={ROUTES.dashboardSecurityLogs}
-              icon={Layers}
-              label="Security Logs"
-            />
+
             <SidebarLink
               to={ROUTES.dashboardSettings}
               icon={Settings}

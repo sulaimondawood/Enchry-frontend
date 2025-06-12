@@ -51,8 +51,13 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   const deviceID = searchParams.get("device") || "";
 
   const { mutate, isPending: isLoadingDeviceStatus } = useMutation({
-    mutationFn: async (payload: boolean) =>
-      toggleDeviceStatus(deviceID, payload),
+    mutationFn: async ({
+      status,
+      devicePublicKey,
+    }: {
+      status: boolean;
+      devicePublicKey: string;
+    }) => toggleDeviceStatus(deviceID, status, devicePublicKey),
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ["devices", "all"],
@@ -148,6 +153,10 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
         if (deviceID) {
           deviceKeypair = await generateDeviceKeyPairs(deviceID);
+          sessionStorage.setItem(
+            "devicePublicKey",
+            JSON.stringify(deviceKeypair.publicKey)
+          );
         } else {
           throw new Error("No device ID found");
         }
@@ -197,7 +206,10 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     });
   };
 
-  const handleToggleDevieStatus = async (status: boolean) => {
+  const handleToggleDevieStatus = async (
+    status: boolean,
+    devicePublicKey: string
+  ) => {
     const stored = sessionStorage?.getItem("location");
     const location: { lat: string; long: string } =
       stored && JSON.parse(stored);
@@ -205,10 +217,16 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     if (!location && status) {
       getDeviceGeoPoints((coords) => {
         sessionStorage.setItem("location", JSON.stringify(coords));
-        mutate(status); // Only call mutate after getting location
+        mutate({
+          status,
+          devicePublicKey: localStorage.getItem("devicePublicKey")!,
+        }); // Only call mutate after getting location
       });
     } else {
-      mutate(status);
+      mutate({
+        status,
+        devicePublicKey: localStorage.getItem("devicePublicKey")!,
+      });
     }
   };
 
@@ -275,7 +293,12 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
 
           {device.active ? (
             <Button
-              onClick={() => handleToggleDevieStatus(false)}
+              onClick={() =>
+                handleToggleDevieStatus(
+                  false,
+                  localStorage.getItem("devicePublicKey") || ""
+                )
+              }
               variant="outline"
               disabled={isLoadingDeviceStatus}
               className="disabled:cursor-not-allowed"
@@ -284,7 +307,12 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
             </Button>
           ) : (
             <Button
-              onClick={() => handleToggleDevieStatus(true)}
+              onClick={() =>
+                handleToggleDevieStatus(
+                  true,
+                  localStorage.getItem("devicePublicKey") || ""
+                )
+              }
               variant="outline"
               disabled={isLoadingDeviceStatus}
               className="disabled:cursor-not-allowed"
