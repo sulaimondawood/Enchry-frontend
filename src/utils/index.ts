@@ -52,7 +52,7 @@ export const generateDeviceKeyPairs = async (deviceId: string) => {
     const seed = sodium.crypto_generichash(32, deviceId);
 
     // Generate deterministic keypair from the seed
-    const keypair = sodium.crypto_kx_seed_keypair(seed);
+    const keypair = sodium.crypto_box_seed_keypair(seed);
 
     return {
       publicKey: keypair.publicKey,
@@ -70,7 +70,7 @@ export const toSodiumByteArray = async (key: string) => {
     await sodium.ready;
 
     // Convert to uint8Array
-    const uint8Array = sodium.from_base64(key);
+    const uint8Array = sodium.from_base64(key, sodium.base64_variants.ORIGINAL);
 
     return uint8Array;
   } catch (error) {
@@ -85,7 +85,7 @@ export const toSodiumBase64 = async (key: Uint8Array) => {
     await sodium.ready;
 
     // Convert to uint8Array
-    const uint8Array = sodium.to_base64(key);
+    const uint8Array = sodium.to_base64(key, sodium.base64_variants.ORIGINAL);
 
     return uint8Array;
   } catch (error) {

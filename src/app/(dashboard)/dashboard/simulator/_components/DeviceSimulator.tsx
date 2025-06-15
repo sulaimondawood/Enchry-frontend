@@ -68,26 +68,30 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   });
 
   const { data: fetchAndStoreSystemPublicKey } = useQuery({
-    queryKey: ["system", "key"],
+    queryKey: ["system", "key", deviceID],
     queryFn: async () => {
-      const key = localStorage?.getItem("serverPublickey");
+      // const key = localStorage?.getItem("serverPublickey");
 
-      if (key) {
-        const parsed = JSON.parse(key);
-        return new Uint8Array(Object.values(parsed));
-      } else {
-        const systemPublicKey = await getSystemKey();
-        const systemPublicKeyToByteArray = await toSodiumByteArray(
-          systemPublicKey
-        );
-        localStorage.setItem(
-          "serverPublickey",
-          JSON.stringify(systemPublicKeyToByteArray)
-        );
-        return systemPublicKeyToByteArray;
-      }
+      // if (key) {
+      //   const parsed = JSON.parse(key);
+      //   return new Uint8Array(Object.values(parsed));
+      // } else {
+      const systemPublicKey = await getSystemKey();
+      console.log("system public key");
+
+      console.log(systemPublicKey);
+
+      const systemPublicKeyToByteArray = await toSodiumByteArray(
+        systemPublicKey
+      );
+      localStorage.setItem(
+        "serverPublickey",
+        JSON.stringify(systemPublicKeyToByteArray)
+      );
+      return systemPublicKeyToByteArray;
+      // }
     },
-    enabled: !!deviceID,
+    enabled: true,
   });
 
   const {
@@ -98,12 +102,11 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
     queryKey: ["climate", "latest", deviceID],
     queryFn: async () => {
       const deviceKeyPair = await generateDeviceKeyPairs(deviceID);
-      const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
-      console.log(deviceKeyPair);
-
       const devicePublicKey = await toSodiumBase64(deviceKeyPair.publicKey);
-
       sessionStorage.setItem("devicePublicKey", devicePublicKey);
+      console.log(devicePublicKey);
+
+      const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
 
       if (!fetchAndStoreSystemPublicKey) {
         toastMsg.error("Server public key is missing");
