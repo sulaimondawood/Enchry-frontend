@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import {
   Card,
   CardContent,
@@ -70,12 +70,6 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
   const { data: fetchAndStoreSystemPublicKey } = useQuery({
     queryKey: ["system", "key", deviceID],
     queryFn: async () => {
-      // const key = localStorage?.getItem("serverPublickey");
-
-      // if (key) {
-      //   const parsed = JSON.parse(key);
-      //   return new Uint8Array(Object.values(parsed));
-      // } else {
       const systemPublicKey = await getSystemKey();
       console.log("system public key");
 
@@ -107,6 +101,11 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
       console.log(devicePublicKey);
 
       const { sensoredData, nonce, ...rest } = await getLatestClimateReading();
+      const data = await getLatestClimateReading();
+
+      console.log(data);
+
+      console.log(sensoredData, nonce, rest);
 
       if (!fetchAndStoreSystemPublicKey) {
         toastMsg.error("Server public key is missing");
@@ -139,6 +138,8 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
           toastMsg.error("Location not found");
           throw new Error("Location missing from sessionStorage");
         }
+
+        console.log(locationData);
 
         const { lat, long } = JSON.parse(locationData);
 
@@ -193,7 +194,7 @@ export function DeviceSimulator({ device }: DeviceSimulatorProps) {
         handleLatestClimateRefetch();
         queryClient.invalidateQueries({ queryKey: ["climate", "latest"] });
       },
-      onError: (err) => {
+      onError: () => {
         toastMsg.error("Failed to store climate data");
       },
     });

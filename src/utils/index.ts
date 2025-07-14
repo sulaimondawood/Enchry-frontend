@@ -93,3 +93,9 @@ export const toSodiumBase64 = async (key: Uint8Array) => {
     throw error;
   }
 };
+
+export const logout = () => {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "/";
+};

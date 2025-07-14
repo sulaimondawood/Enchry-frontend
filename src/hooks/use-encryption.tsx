@@ -1,4 +1,4 @@
-import { toSodiumByteArray } from "@/utils";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import sodium from "libsodium-wrappers";
 
 // Constants matching Java code
@@ -27,6 +27,7 @@ export async function encryptSensorData(
   deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array } // Reused device key pair
 ): Promise<EncryptSensorDataResult> {
   try {
+    const start = performance.now();
     await sodium.ready;
 
     // Validate inputs
@@ -85,6 +86,10 @@ export async function encryptSensorData(
       derivedKey
     );
 
+    const end = performance.now();
+
+    console.log(`Encryption Time: ${(end - start).toFixed(2)} ms`);
+
     return {
       ciphertext: sodium.to_base64(ciphertext, sodium.base64_variants.ORIGINAL),
       nonce: sodium.to_base64(nonceBytes, sodium.base64_variants.ORIGINAL),
@@ -104,6 +109,7 @@ export const decryptSensorData = async (
   deviceKeyPair: { publicKey: Uint8Array; privateKey: Uint8Array },
   serverPublicKey: Uint8Array
 ) => {
+  const start = performance.now();
   try {
     await sodium.ready;
 
@@ -145,9 +151,11 @@ export const decryptSensorData = async (
       nonce,
       derivedKey
     );
+    const end = performance.now();
 
     // Parse decrypted data
     const decryptedMessage = sodium.to_string(decryptedBytes);
+    console.log(`Decryption Time: ${(end - start).toFixed(2)} ms`);
     return JSON.parse(decryptedMessage);
   } catch (error: any) {
     console.log(error);

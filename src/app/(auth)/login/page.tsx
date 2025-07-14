@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { ROUTES } from "@/routes";
 import { useMutation } from "@tanstack/react-query";
 import { LoginPayload, SignIn } from "@/services/api/auth";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useRouter();
@@ -26,6 +27,7 @@ const Login = () => {
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: LoginPayload) => await SignIn(data),
     onSuccess(data) {
+      toast.success("Signed in successfully");
       localStorage.setItem("_token", data?.token);
       navigate.push("/dashboard");
     },
@@ -109,7 +111,7 @@ const Login = () => {
           </CardContent>
           <CardFooter className="flex-col">
             <div className="text-center text-sm text-muted-foreground mt-2">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link
                 href={ROUTES.signUp}
                 className="text-primary hover:underline"

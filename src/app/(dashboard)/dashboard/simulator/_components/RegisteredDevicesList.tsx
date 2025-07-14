@@ -17,7 +17,6 @@ import {
   Trash2,
   Wifi,
   WifiOff,
-  Clock,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
