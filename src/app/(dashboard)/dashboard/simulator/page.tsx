@@ -30,16 +30,6 @@ const DeviceSimulatorPage = () => {
   const { isOnline } = useDetectInternetConnection();
   const searchParams = useSearchParams();
 
-  console.log(searchParams.get("device"));
-
-  // const handleDeviceUpdate = (updatedDevice: SimulatedDevice) => {
-  //   setDevices((prev) =>
-  //     prev.map((device) =>
-  //       device.id === updatedDevice.id ? updatedDevice : device
-  //     )
-  //   );
-  // };
-
   const { mutate: handleDeleteDevice, isPending: isDeletingDevice } =
     useMutation({
       mutationFn: async (deviceId: string) => await deleteDevice(deviceId),
@@ -65,11 +55,7 @@ const DeviceSimulatorPage = () => {
     queryFn: getDevices,
   });
 
-  const {
-    data: device,
-    isLoading: isLoadingDevice,
-    isError: isErrorLoadingDevice,
-  } = useQuery<IDevice>({
+  const { data: device, isLoading: isLoadingDevice } = useQuery<IDevice>({
     queryKey: ["devices", "all", "single-device", searchParams?.get("device")],
     queryFn: () => getDevice(searchParams?.get("device") || ""),
     enabled: !!searchParams.get("device"),
@@ -118,7 +104,7 @@ const DeviceSimulatorPage = () => {
             <Droplet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{20}</div>
+            <div className="text-2xl font-bold">{0}</div>
             <p className="text-xs text-muted-foreground">Sensor data points</p>
           </CardContent>
         </Card>
@@ -158,7 +144,7 @@ const DeviceSimulatorPage = () => {
           {isLoadingDevice ? (
             <Loader />
           ) : searchParams.get("device") ? (
-            <DeviceSimulator device={device!} onDeviceUpdate={() => ""} />
+            <DeviceSimulator device={device!} />
           ) : (
             <Card>
               <CardHeader>

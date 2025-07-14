@@ -50,9 +50,10 @@ export function DeviceRegistrationDialog({
 
         onOpenChange(false);
       },
-      onError(error: any, variables, context) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onError(error: any) {
         if (error?.response?.data) {
-          Object.entries(error?.response.data).forEach(([field, message]) => {
+          Object.entries(error?.response.data).forEach(([, message]) => {
             toast.error(String(message));
           });
         } else {

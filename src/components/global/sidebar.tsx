@@ -16,6 +16,7 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/routes";
+import { logout } from "@/utils";
 
 type SidebarLinkProps = {
   to: string;
@@ -63,11 +64,11 @@ export function DashboardSidebar() {
           </div>
           <div className="space-y-1">
             <SidebarLink to="/dashboard" icon={Home} label="Dashboard" />
-            <SidebarLink
+            {/* <SidebarLink
               to={ROUTES.dashboardDevice}
               icon={ThermometerSnowflake}
               label="Devices"
-            />
+            /> */}
             <SidebarLink
               to={ROUTES.dashboardSimulator}
               icon={Play}
@@ -91,11 +92,7 @@ export function DashboardSidebar() {
               icon={Shield}
               label="ChaCha-20 Settings"
             />
-            <SidebarLink
-              to={ROUTES.dashboardSecurityLogs}
-              icon={Layers}
-              label="Security Logs"
-            />
+
             <SidebarLink
               to={ROUTES.dashboardSettings}
               icon={Settings}
@@ -105,15 +102,14 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-4 border-t border-sidebar-border">
-          <Link href={""}>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            onClick={() => logout()}
+            className="w-full justify-start text-sidebar-foreground"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Log out
+          </Button>
         </div>
       </div>
     </aside>

@@ -91,7 +91,7 @@ export const Faq = () => {
                     <path d="m9 18 6-6-6-6" />
                   </svg>
                 </span>
-                What's the battery impact?
+                What&apos;s the battery impact?
               </h3>
               <p className="text-muted-foreground">
                 Our optimized implementation typically extends battery life by

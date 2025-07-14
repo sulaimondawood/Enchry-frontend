@@ -17,7 +17,6 @@ import {
   Trash2,
   Wifi,
   WifiOff,
-  Clock,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
@@ -56,7 +55,7 @@ export function RegisteredDevicesList({
         <CardContent className="text-center py-12">
           <Thermometer className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">
-            Click "Register Device" to add a new sensor
+            Click &quot;Register Device&quot; to add a new sensor
           </p>
         </CardContent>
       </Card>

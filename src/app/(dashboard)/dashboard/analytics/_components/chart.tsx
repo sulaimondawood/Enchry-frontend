@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import {
   Card,
@@ -17,7 +18,6 @@ import {
   LineChart,
   Line,
   Legend,
-  TooltipProps,
 } from "recharts";
 
 type ChartType = "area" | "line" | "multi-line";
