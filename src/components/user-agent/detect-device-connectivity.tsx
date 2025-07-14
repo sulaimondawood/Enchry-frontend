@@ -1,7 +1,7 @@
 "use client";
 import useDetectInternetConnection from "@/hooks/use-detect-internet-connection";
 import { toast } from "@/hooks/use-toast";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 const DetectDeviceConnectivity = () => {
   const { isOnline } = useDetectInternetConnection();

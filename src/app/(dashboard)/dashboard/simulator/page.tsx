@@ -55,11 +55,7 @@ const DeviceSimulatorPage = () => {
     queryFn: getDevices,
   });
 
-  const {
-    data: device,
-    isLoading: isLoadingDevice,
-    isError: isErrorLoadingDevice,
-  } = useQuery<IDevice>({
+  const { data: device, isLoading: isLoadingDevice } = useQuery<IDevice>({
     queryKey: ["devices", "all", "single-device", searchParams?.get("device")],
     queryFn: () => getDevice(searchParams?.get("device") || ""),
     enabled: !!searchParams.get("device"),

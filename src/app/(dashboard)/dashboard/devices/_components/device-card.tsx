@@ -169,7 +169,7 @@ export function DeviceCard({ device, onEditClick }: DeviceCardProps) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Status can't be verified</p>
+                    <p>Status can&lsquo;t be verified</p>
                   </TooltipContent>
                 </Tooltip>
               )}

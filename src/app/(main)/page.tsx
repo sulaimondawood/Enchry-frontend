@@ -1,19 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  BarChart3,
-  ThermometerSnowflake,
-  Lock,
-  Server,
-  RefreshCw,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
+
 import Testimonial from "./_components/testimonials";
 import { UseCases } from "./_components/use-cases";
 import { Faq } from "./_components/faq";
@@ -23,7 +11,7 @@ import { Stats } from "./_components/stats";
 import { Hero } from "./_components/hero";
 
 const Index = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [, setIsVisible] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
