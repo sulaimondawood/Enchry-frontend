@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { Register, RegisterPayload } from "@/services/api/auth";
+import { toast } from "sonner";
 
 const Signup = () => {
   const navigate = useRouter();
@@ -26,7 +27,8 @@ const Signup = () => {
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: async (data: RegisterPayload) => await Register(data),
-    onSuccess(data, variables, context) {
+    onSuccess() {
+      toast.success("Account created successfully");
       navigate.push("/login");
     },
   });
