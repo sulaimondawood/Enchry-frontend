@@ -1,18 +1,9 @@
 "use client";
 
-import {
-  Home,
-  Settings,
-  LogOut,
-  ThermometerSnowflake,
-  Shield,
-  Layers,
-  Activity,
-  Play,
-} from "lucide-react";
+import { Home, Settings, LogOut, Shield, Activity, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/routes";
